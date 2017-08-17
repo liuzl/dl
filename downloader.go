@@ -66,6 +66,10 @@ func Download(requestInfo *HttpRequest) *HttpResponse {
 		responseInfo.Error = err
 		return responseInfo
 	}
+	headers := GetHeaders(requestInfo.Platform)
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
 	if requestInfo.Method == "POST" {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
