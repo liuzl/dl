@@ -1,15 +1,19 @@
 package dl
 
 import (
+	"flag"
 	"testing"
 )
 
+var xUrl = flag.String("url", "http://m.newsmth.net", "url to fetch")
+
 func TestDownload(t *testing.T) {
+	flag.Parse()
 	requestInfo := &HttpRequest{
-		Url:      "http://m.newsmth.net",
+		Url:      *xUrl,
 		Method:   "GET",
 		UseProxy: false,
-		Platform: "mobile",
+		Platform: "google",
 	}
 
 	responseInfo := Download(requestInfo)

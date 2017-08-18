@@ -9,6 +9,7 @@ import (
 )
 
 var userAgents = map[string][]string{
+	"google": []string{"5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"},
 	"pc": []string{
 		"5.0 (X11; Linux x86_64; rv:29.0) Gecko/20100101 Firefox/29.0",
 		"5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36",
@@ -30,10 +31,11 @@ var userAgents = map[string][]string{
 		"5.0 (iPad; CPU OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11B554a Safari/9537.53"}}
 
 func GetUserAgent(platform string) string {
-	if platform != "pc" && platform != "mobile" {
+	if platform != "pc" && platform != "mobile" && platform != "google" {
 		platform = "pc"
 	}
-	return "Mozilla/" + userAgents[platform][rand.Intn(len(userAgents))]
+	agents := userAgents[platform]
+	return "Mozilla/" + agents[rand.Intn(len(agents))]
 }
 
 func GetHeaders(platform string) map[string]string {
