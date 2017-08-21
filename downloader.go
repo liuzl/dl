@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/axgle/mahonia"
+	Proxy "golang.org/x/net/proxy"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -56,7 +57,22 @@ func Download(requestInfo *HttpRequest) *HttpResponse {
 			responseInfo.Error = errors.New(fmt.Sprintf("failed to parse proxy: %s", proxy))
 			return responseInfo
 		}
-		transport.Proxy = http.ProxyURL(urlProxy)
+		proxyType := GetProxyType(proxy)
+		switch proxyType {
+		case Invalid:
+			responseInfo.Error = errors.New(fmt.Sprintf("invalid proxy type, proxy: %s", proxy))
+			return responseInfo
+		case Socks5:
+			proxyAddr := strings.Trim(proxy, "socks5://")
+			dialer, err := Proxy.SOCKS5("tcp", proxyAddr, nil, Proxy.Direct)
+			if err != nil {
+				responseInfo.Error = errors.New(fmt.Sprintf("failed to set socks5 proxy, proxy: %s, msg: %s", proxy, err))
+				return responseInfo
+			}
+			transport.Dial = dialer.Dial
+		case HTTP, HTTPS:
+			transport.Proxy = http.ProxyURL(urlProxy)
+		}
 	}
 
 	client.Transport = &transport
