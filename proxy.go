@@ -16,6 +16,28 @@ const (
 	proxyReport = "/report"
 )
 
+type ProxyType int
+
+const (
+	Invalid ProxyType = iota
+	HTTP
+	HTTPS
+	Socks5
+)
+
+func GetProxyType(proxy string) ProxyType {
+	if strings.HasPrefix(proxy, "https") {
+		return HTTPS
+	}
+	if strings.HasPrefix(proxy, "http") {
+		return HTTP
+	}
+	if strings.HasPrefix(proxy, "socks5") {
+		return Socks5
+	}
+	return Invalid
+}
+
 func GetProxy() (string, error) {
 	client := &http.Client{
 		Timeout: time.Second * 5,
