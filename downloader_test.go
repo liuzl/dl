@@ -2,6 +2,7 @@ package dl
 
 import (
 	"flag"
+	"strings"
 	"testing"
 )
 
@@ -69,6 +70,33 @@ func TestSocks5Proxy(t *testing.T) {
 		UseProxy: true,
 		Proxy:    "socks5://61.135.155.82:1080",
 		Platform: "google",
+	}
+
+	responseInfo := Download(requestInfo)
+	if responseInfo.Error != nil {
+		t.Error(responseInfo.Error)
+	}
+	t.Log(responseInfo.Text)
+	t.Log(responseInfo.RemoteAddr)
+}
+
+func TestDownloadWithValidFunc(t *testing.T) {
+	flag.Parse()
+	validFuncs := []func(resp *HttpResponse) bool{func(resp *HttpResponse) bool {
+		if strings.Contains(resp.Text, "水木") {
+			t.Log("contains keyword")
+			return true
+		}
+		t.Log("does not cantain keyword")
+		return false
+	}}
+	requestInfo := &HttpRequest{
+		Url:        *xUrl,
+		Method:     "GET",
+		UseProxy:   false,
+		Platform:   "google",
+		Retry:      3,
+		ValidFuncs: validFuncs,
 	}
 
 	responseInfo := Download(requestInfo)
