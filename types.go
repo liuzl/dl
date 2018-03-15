@@ -1,14 +1,16 @@
 package dl
 
 type HttpRequest struct {
-	Url      string `json:"url"`
-	Method   string `json:"method"`
-	PostData string `json:"post_data"`
-	UseProxy bool   `json:"use_proxy"`
-	Proxy    string `json:"proxy"`
-	Timeout  int    `json:"timeout"`
-	MaxLen   int64  `json:"max_len"`
-	Platform string `json:"platform"`
+	Url        string                          `json:"url"`
+	Method     string                          `json:"method"`
+	PostData   string                          `json:"post_data"`
+	UseProxy   bool                            `json:"use_proxy"`
+	Proxy      string                          `json:"proxy"`
+	Timeout    int                             `json:"timeout"`
+	MaxLen     int64                           `json:"max_len"`
+	Platform   string                          `json:"platform"`
+	Retry      int                             `json:"retry"`
+	ValidFuncs []func(resp *HttpResponse) bool `json:"-"`
 }
 
 type HttpResponse struct {

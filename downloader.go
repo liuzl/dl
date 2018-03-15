@@ -12,6 +12,7 @@ import (
 	Proxy "golang.org/x/net/proxy"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/http/httptrace"
 	"net/url"
@@ -21,6 +22,35 @@ import (
 )
 
 func Download(requestInfo *HttpRequest) *HttpResponse {
+	if requestInfo.Retry == 0 {
+		requestInfo.Retry = 1
+	}
+	var resp *HttpResponse
+	for i := 0; i < requestInfo.Retry; i++ {
+		resp = downloadOnce(requestInfo)
+		if resp == nil || resp.Error != nil {
+			time.Sleep(time.Second * time.Duration(rand.Intn(2)+1))
+			continue
+		}
+		respValid := true
+		if requestInfo.ValidFuncs != nil {
+			for _, validFunc := range requestInfo.ValidFuncs {
+				if !validFunc(resp) {
+					respValid = false
+					break
+				}
+			}
+		}
+		if !respValid {
+			time.Sleep(time.Second * time.Duration(rand.Intn(2)+1))
+			continue
+		} else {
+			break
+		}
+	}
+	return resp
+}
+func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	var timeout time.Duration
 	if requestInfo.Timeout > 0 {
 		timeout = time.Duration(requestInfo.Timeout) * time.Second
