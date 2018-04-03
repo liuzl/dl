@@ -21,6 +21,10 @@ import (
 	"time"
 )
 
+func DownloadUrl(url string) *HttpResponse {
+	return Download(&HttpRequest{Url: url})
+}
+
 func Download(requestInfo *HttpRequest) *HttpResponse {
 	if requestInfo.Retry == 0 {
 		requestInfo.Retry = 1

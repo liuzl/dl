@@ -8,6 +8,15 @@ import (
 
 var xUrl = flag.String("url", "http://m.newsmth.net", "url to fetch")
 
+func TestDownloadUrl(t *testing.T) {
+	flag.Parse()
+	res := DownloadUrl(*xUrl)
+	if res.Error != nil {
+		t.Error(res.Error)
+	}
+	t.Log(res.Text)
+}
+
 func TestDownload(t *testing.T) {
 	flag.Parse()
 	requestInfo := &HttpRequest{
