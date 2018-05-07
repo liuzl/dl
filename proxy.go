@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	proxyHost   = "http://127.0.0.1:8888"
+	proxyHost   = "http://127.0.0.1:8118"
 	proxyGet    = "/get"
-	proxyReport = "/report"
+	proxyReport = "/bad"
 )
 
 type ProxyType int
@@ -60,7 +60,7 @@ func GetProxy() (string, error) {
 	return "", errors.New("failed to get proxy finally")
 }
 
-func ReportProxyStatus(proxy string, isValid bool) error {
+func ReportProxyStatus(proxy string) error {
 	if len(proxy) == 0 {
 		return nil
 	}
@@ -69,12 +69,7 @@ func ReportProxyStatus(proxy string, isValid bool) error {
 	}
 	reportUrl := proxyHost + proxyReport
 	data := url.Values{}
-	data.Add("proxy", proxy)
-	if isValid {
-		data.Add("status", "valid")
-	} else {
-		data.Add("status", "invalid")
-	}
+	data.Add("p", proxy)
 	resp, err := client.Post(reportUrl, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 	if err != nil {
 		return err
