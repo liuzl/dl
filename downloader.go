@@ -25,6 +25,10 @@ func DownloadUrl(url string) *HttpResponse {
 	return Download(&HttpRequest{Url: url})
 }
 
+func DownloadUrlWithProxy(url string) *HttpResponse {
+	return Download(&HttpRequest{Url: url, UseProxy: true, Retry: 5})
+}
+
 func Download(requestInfo *HttpRequest) *HttpResponse {
 	if requestInfo.Retry == 0 {
 		requestInfo.Retry = 1
