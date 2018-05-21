@@ -25,6 +25,10 @@ func DownloadUrl(url string) *HttpResponse {
 	return Download(&HttpRequest{Url: url})
 }
 
+func DownloadUrlWithProxy(url string) *HttpResponse {
+	return Download(&HttpRequest{Url: url, UseProxy: true, Retry: 5})
+}
+
 func Download(requestInfo *HttpRequest) *HttpResponse {
 	if requestInfo.Retry == 0 {
 		requestInfo.Retry = 1
@@ -120,8 +124,13 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
+	for k, v := range requestInfo.Header {
+		req.Header.Set(k, v)
+	}
 	if requestInfo.Method == "POST" {
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		if req.Header.Get("Content-Type") == "" {
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		}
 	}
 	trace := &httptrace.ClientTrace{
 		GotConn: func(connInfo httptrace.GotConnInfo) {

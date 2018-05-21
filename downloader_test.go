@@ -40,7 +40,7 @@ func TestHTTPProxy(t *testing.T) {
 		Url:      *xUrl,
 		Method:   "GET",
 		UseProxy: true,
-		Proxy:    "http://114.141.166.242:80",
+		//Proxy:    "http://114.141.166.242:80",
 		Platform: "google",
 	}
 

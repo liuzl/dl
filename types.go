@@ -10,6 +10,7 @@ type HttpRequest struct {
 	MaxLen     int64                           `json:"max_len"`
 	Platform   string                          `json:"platform"`
 	Retry      int                             `json:"retry"`
+	Header     map[string]string               `json:"header"`
 	ValidFuncs []func(resp *HttpResponse) bool `json:"-"`
 }
 
