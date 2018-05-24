@@ -65,12 +65,8 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	} else {
 		timeout = 30 * time.Second
 	}
-	client := &http.Client{
-		Timeout: timeout,
-	}
-	responseInfo := &HttpResponse{
-		Url: requestInfo.Url,
-	}
+	client := &http.Client{Timeout: timeout}
+	responseInfo := &HttpResponse{Url: requestInfo.Url}
 	transport := http.Transport{
 		DisableKeepAlives: true,
 		TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
@@ -140,8 +136,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 
 	var resp *http.Response
-	resp, err = client.Do(req)
-	if err != nil {
+	if resp, err = client.Do(req); err != nil {
 		responseInfo.Error = err
 		return responseInfo
 	}
@@ -204,9 +199,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	}
 
 	var encoding string
-	encoding, err = GuessEncoding(responseInfo.Content)
-	if err != nil {
-		//
+	if encoding, err = GuessEncoding(responseInfo.Content); err != nil {
 		responseInfo.Text = string(responseInfo.Content)
 		responseInfo.Encoding = ""
 		return responseInfo
