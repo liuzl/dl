@@ -6,10 +6,7 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"crypto/tls"
-	"errors"
 	"fmt"
-	"github.com/axgle/mahonia"
-	Proxy "golang.org/x/net/proxy"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -19,6 +16,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/axgle/mahonia"
+	Proxy "golang.org/x/net/proxy"
 )
 
 func DownloadUrl(url string) *HttpResponse {
@@ -73,12 +73,14 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	}
 
 	//proxy
+	needReport := false
+	var proxy string
 	if requestInfo.UseProxy {
-		var proxy string
 		var err error
 		if len(requestInfo.Proxy) > 0 {
 			proxy = requestInfo.Proxy
 		} else {
+			needReport = true
 			proxy, err = GetProxy()
 			if err != nil {
 				responseInfo.Error = err
@@ -88,19 +90,20 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 		responseInfo.Proxy = proxy
 		urlProxy, err := url.Parse(proxy)
 		if err != nil {
-			responseInfo.Error = errors.New(fmt.Sprintf("failed to parse proxy: %s", proxy))
+			responseInfo.Error = fmt.Errorf("failed to parse proxy: %s", proxy)
 			return responseInfo
 		}
 		proxyType := GetProxyType(proxy)
 		switch proxyType {
 		case Invalid:
-			responseInfo.Error = errors.New(fmt.Sprintf("invalid proxy type, proxy: %s", proxy))
+			responseInfo.Error = fmt.Errorf("invalid proxy type, proxy: %s", proxy)
 			return responseInfo
 		case Socks5:
 			proxyAddr := strings.Trim(proxy, "socks5://")
 			dialer, err := Proxy.SOCKS5("tcp", proxyAddr, nil, Proxy.Direct)
 			if err != nil {
-				responseInfo.Error = errors.New(fmt.Sprintf("failed to set socks5 proxy, proxy: %s, msg: %s", proxy, err))
+				responseInfo.Error = fmt.Errorf(
+					"failed to set socks5 proxy, proxy: %s, msg: %s", proxy, err)
 				return responseInfo
 			}
 			transport.Dial = dialer.Dial
@@ -111,7 +114,8 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 
 	client.Transport = &transport
 
-	req, err := http.NewRequest(requestInfo.Method, requestInfo.Url, strings.NewReader(requestInfo.PostData))
+	req, err := http.NewRequest(
+		requestInfo.Method, requestInfo.Url, strings.NewReader(requestInfo.PostData))
 	if err != nil {
 		responseInfo.Error = err
 		return responseInfo
@@ -123,10 +127,8 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	for k, v := range requestInfo.Header {
 		req.Header.Set(k, v)
 	}
-	if requestInfo.Method == "POST" {
-		if req.Header.Get("Content-Type") == "" {
-			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		}
+	if requestInfo.Method == "POST" && req.Header.Get("Content-Type") == "" {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
 	trace := &httptrace.ClientTrace{
 		GotConn: func(connInfo httptrace.GotConnInfo) {
@@ -137,6 +139,9 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 
 	var resp *http.Response
 	if resp, err = client.Do(req); err != nil {
+		if needReport {
+			ReportProxyStatus(proxy)
+		}
 		responseInfo.Error = err
 		return responseInfo
 	}
@@ -149,7 +154,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	if err != nil {
 		//
 	} else if requestInfo.MaxLen > 0 && contentLen > requestInfo.MaxLen {
-		responseInfo.Error = errors.New("reponse size too large")
+		responseInfo.Error = fmt.Errorf("reponse size too large")
 		return responseInfo
 	}
 
@@ -164,7 +169,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 			if err == io.EOF {
 				break
 			}
-			responseInfo.Error = errors.New("reponse size too large - count")
+			responseInfo.Error = fmt.Errorf("reponse size too large - count")
 			return responseInfo
 		}
 	}
