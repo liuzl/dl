@@ -10,6 +10,7 @@ type HttpRequest struct {
 	PostData   string                          `json:"post_data"`
 	UseProxy   bool                            `json:"use_proxy"`
 	Proxy      string                          `json:"proxy"`
+	Timeout    int                             `json:"timeout"`
 	MaxLen     int64                           `json:"max_len"`
 	Platform   string                          `json:"platform"`
 	Retry      int                             `json:"retry"`
@@ -28,4 +29,5 @@ type HttpResponse struct {
 	Cookies    map[string]string `json:"cookies"`
 	RemoteAddr string            `json:"remote_addr"`
 	Error      error             `json:"error"`
+	ctx        context.Context   `json:"-"`
 }
