@@ -5,6 +5,7 @@ import (
 	"compress/flate"
 	"compress/gzip"
 	"compress/zlib"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -59,13 +60,7 @@ func Download(requestInfo *HttpRequest) *HttpResponse {
 	return resp
 }
 func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
-	var timeout time.Duration
-	if requestInfo.Timeout > 0 {
-		timeout = time.Duration(requestInfo.Timeout) * time.Second
-	} else {
-		timeout = 30 * time.Second
-	}
-	client := &http.Client{Timeout: timeout}
+	client := &http.Client{}
 	responseInfo := &HttpResponse{Url: requestInfo.Url}
 	transport := http.Transport{
 		DisableKeepAlives: true,
@@ -119,6 +114,13 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	if err != nil {
 		responseInfo.Error = err
 		return responseInfo
+	}
+	if requestInfo.ctx != nil {
+		req = req.WithContext(requestInfo.ctx)
+	} else {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		req = req.WithContext(ctx)
 	}
 	headers := GetHeaders(requestInfo.Platform)
 	for k, v := range headers {

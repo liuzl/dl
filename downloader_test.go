@@ -1,9 +1,12 @@
 package dl
 
 import (
+	"context"
 	"flag"
+	"fmt"
 	"strings"
 	"testing"
+	"time"
 )
 
 var xUrl = flag.String("url", "http://m.newsmth.net", "url to fetch")
@@ -106,6 +109,35 @@ func TestDownloadWithValidFunc(t *testing.T) {
 		Platform:   "google",
 		Retry:      3,
 		ValidFuncs: validFuncs,
+	}
+
+	responseInfo := Download(requestInfo)
+	if responseInfo.Error != nil {
+		t.Error(responseInfo.Error)
+	}
+	t.Log(responseInfo.Text)
+	t.Log(responseInfo.RemoteAddr)
+}
+
+func TestDownloadWithCtx(t *testing.T) {
+	flag.Parse()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Millisecond)
+	defer cancel()
+	go func() {
+		select {
+		case <-time.After(10 * time.Second):
+			fmt.Println("overslept")
+		case <-ctx.Done():
+			fmt.Println(ctx.Err()) // prints "context deadline exceeded"
+		}
+	}()
+	requestInfo := &HttpRequest{
+		Url:      *xUrl,
+		Method:   "GET",
+		UseProxy: false,
+		Platform: "google",
+		Retry:    3,
+		ctx:      ctx,
 	}
 
 	responseInfo := Download(requestInfo)

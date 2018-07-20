@@ -1,17 +1,21 @@
 package dl
 
+import (
+	"context"
+)
+
 type HttpRequest struct {
 	Url        string                          `json:"url"`
 	Method     string                          `json:"method"`
 	PostData   string                          `json:"post_data"`
 	UseProxy   bool                            `json:"use_proxy"`
 	Proxy      string                          `json:"proxy"`
-	Timeout    int                             `json:"timeout"`
 	MaxLen     int64                           `json:"max_len"`
 	Platform   string                          `json:"platform"`
 	Retry      int                             `json:"retry"`
 	Header     map[string]string               `json:"header"`
 	ValidFuncs []func(resp *HttpResponse) bool `json:"-"`
+	ctx        context.Context                 `json:"-"`
 }
 
 type HttpResponse struct {
