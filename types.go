@@ -1,5 +1,9 @@
 package dl
 
+import (
+	"context"
+)
+
 type HttpRequest struct {
 	Url        string                          `json:"url"`
 	Method     string                          `json:"method"`
@@ -12,6 +16,7 @@ type HttpRequest struct {
 	Retry      int                             `json:"retry"`
 	Header     map[string]string               `json:"header"`
 	ValidFuncs []func(resp *HttpResponse) bool `json:"-"`
+	Ctx        context.Context                 `json:"-"`
 }
 
 type HttpResponse struct {
@@ -24,4 +29,5 @@ type HttpResponse struct {
 	Cookies    map[string]string `json:"cookies"`
 	RemoteAddr string            `json:"remote_addr"`
 	Error      error             `json:"error"`
+	Ctx        context.Context   `json:"-"`
 }

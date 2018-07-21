@@ -5,6 +5,7 @@ import (
 	"compress/flate"
 	"compress/gzip"
 	"compress/zlib"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -36,6 +37,9 @@ func Download(requestInfo *HttpRequest) *HttpResponse {
 	var resp *HttpResponse
 	for i := 0; i < requestInfo.Retry; i++ {
 		resp = downloadOnce(requestInfo)
+		if resp != nil && (resp.Ctx.Err() == context.Canceled || resp.Ctx.Err() == context.DeadlineExceeded) {
+			return resp
+		}
 		if resp == nil || resp.Error != nil {
 			time.Sleep(time.Second * time.Duration(rand.Intn(2)+1))
 			continue
@@ -120,6 +124,9 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 		responseInfo.Error = err
 		return responseInfo
 	}
+	if requestInfo.Ctx != nil {
+		req = req.WithContext(requestInfo.Ctx)
+	}
 	headers := GetHeaders(requestInfo.Platform)
 	for k, v := range headers {
 		req.Header.Set(k, v)
@@ -136,7 +143,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 		},
 	}
 	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
-
+	responseInfo.Ctx = req.Context()
 	var resp *http.Response
 	if resp, err = client.Do(req); err != nil {
 		if needReport {
