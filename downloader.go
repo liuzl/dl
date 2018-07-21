@@ -37,7 +37,7 @@ func Download(requestInfo *HttpRequest) *HttpResponse {
 	var resp *HttpResponse
 	for i := 0; i < requestInfo.Retry; i++ {
 		resp = downloadOnce(requestInfo)
-		if resp != nil && (resp.ctx.Err() == context.Canceled || resp.ctx.Err() == context.DeadlineExceeded) {
+		if resp != nil && (resp.Ctx.Err() == context.Canceled || resp.Ctx.Err() == context.DeadlineExceeded) {
 			return resp
 		}
 		if resp == nil || resp.Error != nil {
@@ -124,8 +124,8 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 		responseInfo.Error = err
 		return responseInfo
 	}
-	if requestInfo.ctx != nil {
-		req = req.WithContext(requestInfo.ctx)
+	if requestInfo.Ctx != nil {
+		req = req.WithContext(requestInfo.Ctx)
 	}
 	headers := GetHeaders(requestInfo.Platform)
 	for k, v := range headers {
@@ -143,7 +143,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 		},
 	}
 	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
-	responseInfo.ctx = req.Context()
+	responseInfo.Ctx = req.Context()
 	var resp *http.Response
 	if resp, err = client.Do(req); err != nil {
 		if needReport {

@@ -121,7 +121,7 @@ func TestDownloadWithValidFunc(t *testing.T) {
 
 func TestDownloadWithCtx(t *testing.T) {
 	flag.Parse()
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	go func() {
 		select {
@@ -136,8 +136,9 @@ func TestDownloadWithCtx(t *testing.T) {
 		Method:   "GET",
 		UseProxy: false,
 		Platform: "google",
+		Timeout:  30,
 		Retry:    3,
-		ctx:      ctx,
+		Ctx:      ctx,
 	}
 
 	responseInfo := Download(requestInfo)

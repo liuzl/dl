@@ -16,7 +16,7 @@ type HttpRequest struct {
 	Retry      int                             `json:"retry"`
 	Header     map[string]string               `json:"header"`
 	ValidFuncs []func(resp *HttpResponse) bool `json:"-"`
-	ctx        context.Context                 `json:"-"`
+	Ctx        context.Context                 `json:"-"`
 }
 
 type HttpResponse struct {
@@ -29,5 +29,5 @@ type HttpResponse struct {
 	Cookies    map[string]string `json:"cookies"`
 	RemoteAddr string            `json:"remote_addr"`
 	Error      error             `json:"error"`
-	ctx        context.Context   `json:"-"`
+	Ctx        context.Context   `json:"-"`
 }
