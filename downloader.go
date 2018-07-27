@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptrace"
 	"net/url"
 	"strconv"
@@ -20,6 +21,7 @@ import (
 
 	"github.com/axgle/mahonia"
 	Proxy "golang.org/x/net/proxy"
+	"golang.org/x/net/publicsuffix"
 )
 
 func DownloadUrl(url string) *HttpResponse {
@@ -69,7 +71,13 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	} else {
 		timeout = 30 * time.Second
 	}
-	client := &http.Client{Timeout: timeout}
+	var client *http.Client
+	if requestInfo.Jar != nil {
+		client = &http.Client{Timeout: timeout, Jar: requestInfo.Jar}
+	} else {
+		jar, _ := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+		client = &http.Client{Timeout: timeout, Jar: jar}
+	}
 	responseInfo := &HttpResponse{Url: requestInfo.Url}
 	transport := http.Transport{
 		DisableKeepAlives: true,
@@ -224,5 +232,6 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	}
 	responseInfo.Text = encoder.ConvertString(string(responseInfo.Content))
 	responseInfo.Encoding = encoding
+	responseInfo.Jar = client.Jar
 	return responseInfo
 }
