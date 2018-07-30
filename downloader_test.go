@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/juju/errors"
 )
 
 var xUrl = flag.String("url", "http://m.newsmth.net", "url to fetch")
@@ -31,7 +33,7 @@ func TestDownload(t *testing.T) {
 
 	responseInfo := Download(requestInfo)
 	if responseInfo.Error != nil {
-		t.Error(responseInfo.Error)
+		t.Error(errors.ErrorStack(responseInfo.Error))
 	}
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)
@@ -49,7 +51,7 @@ func TestHTTPProxy(t *testing.T) {
 
 	responseInfo := Download(requestInfo)
 	if responseInfo.Error != nil {
-		t.Error(responseInfo.Error)
+		t.Error(errors.ErrorStack(responseInfo.Error))
 	}
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)
@@ -68,7 +70,7 @@ func TestHTTPSProxy(t *testing.T) {
 
 	responseInfo := Download(requestInfo)
 	if responseInfo.Error != nil {
-		t.Error(responseInfo.Error)
+		t.Error(errors.ErrorStack(responseInfo.Error))
 	}
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)
@@ -86,7 +88,7 @@ func TestSocks5Proxy(t *testing.T) {
 
 	responseInfo := Download(requestInfo)
 	if responseInfo.Error != nil {
-		t.Error(responseInfo.Error)
+		t.Error(errors.ErrorStack(responseInfo.Error))
 	}
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)
@@ -113,7 +115,7 @@ func TestDownloadWithValidFunc(t *testing.T) {
 
 	responseInfo := Download(requestInfo)
 	if responseInfo.Error != nil {
-		t.Error(responseInfo.Error)
+		t.Error(errors.ErrorStack(responseInfo.Error))
 	}
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)
@@ -131,6 +133,7 @@ func TestDownloadWithCtx(t *testing.T) {
 			fmt.Println(ctx.Err()) // prints "context deadline exceeded"
 		}
 	}()
+	time.Sleep(5 * time.Second)
 	requestInfo := &HttpRequest{
 		Url:      *xUrl,
 		Method:   "GET",
@@ -143,7 +146,7 @@ func TestDownloadWithCtx(t *testing.T) {
 
 	responseInfo := Download(requestInfo)
 	if responseInfo.Error != nil {
-		t.Error(responseInfo.Error)
+		t.Error(errors.ErrorStack(responseInfo.Error))
 	}
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)

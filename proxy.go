@@ -8,6 +8,9 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/juju/errors"
 )
 
 const (
@@ -57,7 +60,7 @@ func GetProxy() (string, error) {
 		}
 		return "http://" + string(body), nil
 	}
-	return "", errors.New("failed to get proxy finally")
+	return "", errors.Trace(errors.New("failed to get proxy finally"))
 }
 
 func ReportProxyStatus(proxy string) error {
@@ -72,7 +75,7 @@ func ReportProxyStatus(proxy string) error {
 	data.Add("p", proxy)
 	resp, err := client.Post(reportUrl, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	defer resp.Body.Close()
 	return nil
