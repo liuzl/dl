@@ -1,8 +1,6 @@
 package dl
 
 import (
-	"errors"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"net/http"
 	"net/url"
