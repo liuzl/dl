@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"compress/zlib"
 	"encoding/base64"
-	"github.com/saintfish/chardet"
 	"math/rand"
+
+	"github.com/juju/errors"
+	"github.com/saintfish/chardet"
 )
 
 var userAgents = map[string][]string{
@@ -55,7 +57,7 @@ func GuessEncoding(content []byte) (string, error) {
 	detector := chardet.NewHtmlDetector()
 	res, err := detector.DetectBest(content)
 	if err != nil {
-		return "", err
+		return "", errors.Trace(err)
 	}
 	return res.Charset, nil
 }

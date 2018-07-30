@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/axgle/mahonia"
+	"github.com/juju/errors"
 	Proxy "golang.org/x/net/proxy"
 	"golang.org/x/net/publicsuffix"
 )
@@ -95,27 +96,27 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 			needReport = true
 			proxy, err = GetProxy()
 			if err != nil {
-				responseInfo.Error = err
+				responseInfo.Error = errors.Trace(err)
 				return responseInfo
 			}
 		}
 		responseInfo.Proxy = proxy
 		urlProxy, err := url.Parse(proxy)
 		if err != nil {
-			responseInfo.Error = fmt.Errorf("failed to parse proxy: %s", proxy)
+			responseInfo.Error = errors.Trace(fmt.Errorf("failed to parse proxy: %s", proxy))
 			return responseInfo
 		}
 		proxyType := GetProxyType(proxy)
 		switch proxyType {
 		case Invalid:
-			responseInfo.Error = fmt.Errorf("invalid proxy type, proxy: %s", proxy)
+			responseInfo.Error = errors.Trace(fmt.Errorf("invalid proxy type, proxy: %s", proxy))
 			return responseInfo
 		case Socks5:
 			proxyAddr := strings.Trim(proxy, "socks5://")
 			dialer, err := Proxy.SOCKS5("tcp", proxyAddr, nil, Proxy.Direct)
 			if err != nil {
-				responseInfo.Error = fmt.Errorf(
-					"failed to set socks5 proxy, proxy: %s, msg: %s", proxy, err)
+				responseInfo.Error = errors.Trace(fmt.Errorf(
+					"failed to set socks5 proxy, proxy: %s, msg: %s", proxy, err))
 				return responseInfo
 			}
 			transport.Dial = dialer.Dial
@@ -129,7 +130,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	req, err := http.NewRequest(
 		requestInfo.Method, requestInfo.Url, strings.NewReader(requestInfo.PostData))
 	if err != nil {
-		responseInfo.Error = err
+		responseInfo.Error = errors.Trace(err)
 		return responseInfo
 	}
 	if requestInfo.Ctx != nil {
@@ -157,7 +158,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 		if needReport {
 			ReportProxyStatus(proxy)
 		}
-		responseInfo.Error = err
+		responseInfo.Error = errors.Trace(err)
 		return responseInfo
 	}
 
@@ -169,7 +170,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 	if err != nil {
 		//
 	} else if requestInfo.MaxLen > 0 && contentLen > requestInfo.MaxLen {
-		responseInfo.Error = fmt.Errorf("reponse size too large")
+		responseInfo.Error = errors.Trace(fmt.Errorf("reponse size too large"))
 		return responseInfo
 	}
 
@@ -184,7 +185,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 			if err == io.EOF {
 				break
 			}
-			responseInfo.Error = fmt.Errorf("reponse size too large - count")
+			responseInfo.Error = errors.Trace(fmt.Errorf("reponse size too large - count"))
 			return responseInfo
 		}
 	}
@@ -195,7 +196,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 		var reader io.ReadCloser
 		contentReader := bytes.NewReader(content)
 		if reader, err = gzip.NewReader(contentReader); err != nil {
-			responseInfo.Error = err
+			responseInfo.Error = errors.Trace(err)
 			return responseInfo
 		}
 		defer reader.Close()
@@ -208,7 +209,7 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 				// raw defalte, no zlib header
 				reader = flate.NewReader(bytes.NewReader(content))
 			} else {
-				responseInfo.Error = err
+				responseInfo.Error = errors.Trace(err)
 				return responseInfo
 			}
 		}
