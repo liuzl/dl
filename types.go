@@ -1,5 +1,10 @@
 package dl
 
+import (
+	"context"
+	"net/http"
+)
+
 type HttpRequest struct {
 	Url        string                          `json:"url"`
 	Method     string                          `json:"method"`
@@ -12,16 +17,19 @@ type HttpRequest struct {
 	Retry      int                             `json:"retry"`
 	Header     map[string]string               `json:"header"`
 	ValidFuncs []func(resp *HttpResponse) bool `json:"-"`
+	Ctx        context.Context                 `json:"-"`
+	Jar        http.CookieJar                  `json:"-"`
 }
 
 type HttpResponse struct {
-	Url        string            `json:"url"`
-	Text       string            `json:"text"`
-	Content    []byte            `json:"content"`
-	Encoding   string            `json:"encoding"`
-	StatusCode int               `json:"status_code"`
-	Proxy      string            `json:"proxy"`
-	Cookies    map[string]string `json:"cookies"`
-	RemoteAddr string            `json:"remote_addr"`
-	Error      error             `json:"error"`
+	Url        string          `json:"url"`
+	Text       string          `json:"text"`
+	Content    []byte          `json:"content"`
+	Encoding   string          `json:"encoding"`
+	StatusCode int             `json:"status_code"`
+	Proxy      string          `json:"proxy"`
+	RemoteAddr string          `json:"remote_addr"`
+	Error      error           `json:"error"`
+	Ctx        context.Context `json:"-"`
+	Jar        http.CookieJar  `json:"-"`
 }

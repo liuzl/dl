@@ -1,9 +1,14 @@
 package dl
 
 import (
+	"context"
 	"flag"
+	"fmt"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/juju/errors"
 )
 
 var xUrl = flag.String("url", "http://m.newsmth.net", "url to fetch")
@@ -28,7 +33,7 @@ func TestDownload(t *testing.T) {
 
 	responseInfo := Download(requestInfo)
 	if responseInfo.Error != nil {
-		t.Error(responseInfo.Error)
+		t.Error(errors.ErrorStack(responseInfo.Error))
 	}
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)
@@ -46,7 +51,7 @@ func TestHTTPProxy(t *testing.T) {
 
 	responseInfo := Download(requestInfo)
 	if responseInfo.Error != nil {
-		t.Error(responseInfo.Error)
+		t.Error(errors.ErrorStack(responseInfo.Error))
 	}
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)
@@ -65,7 +70,7 @@ func TestHTTPSProxy(t *testing.T) {
 
 	responseInfo := Download(requestInfo)
 	if responseInfo.Error != nil {
-		t.Error(responseInfo.Error)
+		t.Error(errors.ErrorStack(responseInfo.Error))
 	}
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)
@@ -83,7 +88,7 @@ func TestSocks5Proxy(t *testing.T) {
 
 	responseInfo := Download(requestInfo)
 	if responseInfo.Error != nil {
-		t.Error(responseInfo.Error)
+		t.Error(errors.ErrorStack(responseInfo.Error))
 	}
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)
@@ -110,7 +115,38 @@ func TestDownloadWithValidFunc(t *testing.T) {
 
 	responseInfo := Download(requestInfo)
 	if responseInfo.Error != nil {
-		t.Error(responseInfo.Error)
+		t.Error(errors.ErrorStack(responseInfo.Error))
+	}
+	t.Log(responseInfo.Text)
+	t.Log(responseInfo.RemoteAddr)
+}
+
+func TestDownloadWithCtx(t *testing.T) {
+	flag.Parse()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	go func() {
+		select {
+		case <-time.After(10 * time.Second):
+			fmt.Println("overslept")
+		case <-ctx.Done():
+			fmt.Println(ctx.Err()) // prints "context deadline exceeded"
+		}
+	}()
+	time.Sleep(5 * time.Second)
+	requestInfo := &HttpRequest{
+		Url:      *xUrl,
+		Method:   "GET",
+		UseProxy: false,
+		Platform: "google",
+		Timeout:  30,
+		Retry:    3,
+		Ctx:      ctx,
+	}
+
+	responseInfo := Download(requestInfo)
+	if responseInfo.Error != nil {
+		t.Error(errors.ErrorStack(responseInfo.Error))
 	}
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)
