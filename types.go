@@ -16,6 +16,8 @@ type HttpRequest struct {
 	Platform   string                          `json:"platform"`
 	Retry      int                             `json:"retry"`
 	Header     map[string]string               `json:"header"`
+	Username   string                          `json:"username"`
+	Password   string                          `json:"password"`
 	ValidFuncs []func(resp *HttpResponse) bool `json:"-"`
 	Ctx        context.Context                 `json:"-"`
 	Jar        http.CookieJar                  `json:"-"`

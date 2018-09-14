@@ -151,3 +151,21 @@ func TestDownloadWithCtx(t *testing.T) {
 	t.Log(responseInfo.Text)
 	t.Log(responseInfo.RemoteAddr)
 }
+
+func TestDownloadBasicAuth(t *testing.T) {
+	flag.Parse()
+	requestInfo := &HttpRequest{
+		Url:      "https://dl.zliu.org/echo",
+		Method:   "GET",
+		UseProxy: false,
+		Username: "zliu",
+		Password: "good",
+	}
+
+	responseInfo := Download(requestInfo)
+	if responseInfo.Error != nil {
+		t.Error(errors.ErrorStack(responseInfo.Error))
+	}
+	t.Log(responseInfo.Text)
+	t.Log(responseInfo.RemoteAddr)
+}

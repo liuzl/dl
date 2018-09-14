@@ -133,6 +133,9 @@ func downloadOnce(requestInfo *HttpRequest) *HttpResponse {
 		responseInfo.Error = errors.Trace(err)
 		return responseInfo
 	}
+	if requestInfo.Username != "" && requestInfo.Password != "" {
+		req.SetBasicAuth(requestInfo.Username, requestInfo.Password)
+	}
 	if requestInfo.Ctx != nil {
 		req = req.WithContext(requestInfo.Ctx)
 	}
