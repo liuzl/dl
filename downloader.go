@@ -40,7 +40,9 @@ func Download(requestInfo *HttpRequest) *HttpResponse {
 	var resp *HttpResponse
 	for i := 0; i < requestInfo.Retry; i++ {
 		resp = downloadOnce(requestInfo)
-		if resp != nil && (resp.Ctx.Err() == context.Canceled || resp.Ctx.Err() == context.DeadlineExceeded) {
+		if resp != nil && resp.Ctx != nil &&
+			(resp.Ctx.Err() == context.Canceled ||
+				resp.Ctx.Err() == context.DeadlineExceeded) {
 			return resp
 		}
 		if resp == nil || resp.Error != nil {
