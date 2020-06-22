@@ -1,6 +1,7 @@
 package dl
 
 import (
+	"flag"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -11,8 +12,14 @@ import (
 	"github.com/juju/errors"
 )
 
+var (
+	proxyHost = flag.String(
+		"proxy_server",
+		"http://127.0.0.1:8118",
+		"proxy server address")
+)
+
 const (
-	proxyHost   = "http://127.0.0.1:8118"
 	proxyGet    = "/get"
 	proxyReport = "/bad"
 )
@@ -43,7 +50,7 @@ func GetProxy() (string, error) {
 	client := &http.Client{
 		Timeout: time.Second * 5,
 	}
-	url := proxyHost + proxyGet
+	url := *proxyHost + proxyGet
 	for i := 0; i < 3; i++ {
 		resp, err := client.Get(url)
 		if err != nil {
@@ -68,7 +75,7 @@ func ReportProxyStatus(proxy string) error {
 	client := &http.Client{
 		Timeout: time.Second * 5,
 	}
-	reportUrl := proxyHost + proxyReport
+	reportUrl := *proxyHost + proxyReport
 	data := url.Values{}
 	data.Add("p", proxy)
 	resp, err := client.Post(reportUrl, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
